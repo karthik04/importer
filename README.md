@@ -1,8 +1,11 @@
 # Importer
 
+### docker-compose
+To build and run the app:
+`docker-compose up --build`
 
 
-### Building
+### Building with gradle
 
 To launch your tests:
 ```

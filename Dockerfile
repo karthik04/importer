@@ -1,10 +1,18 @@
-# 1st Docker build stage: build the project with Gradle
+#1 Cache gradle dependencies
+FROM gradle:7.0-jdk11 AS cache
+WORKDIR /app
+ENV GRADLE_USER_HOME /cache
+COPY build.gradle.kts settings.gradle.kts ./
+RUN gradle --no-daemon build --stacktrace
+
+#2 Docker build stage: build the project with Gradle
 FROM gradle:7.0-jdk11 as builder
 WORKDIR /project
 COPY . /project/
+COPY --from=cache /cache /home/gradle/.gradle
 RUN gradle :build --no-daemon
 
-# 2nd Docker build stage: copy builder output and configure entry point
+#3 Docker build stage: copy builder output and configure entry point
 FROM adoptopenjdk:11-jre-hotspot
 ENV APP_DIR /application
 ENV APP_FILE container-uber-jar.jar
@@ -12,11 +20,13 @@ ENV APP_FILE container-uber-jar.jar
 EXPOSE 8080
 
 WORKDIR $APP_DIR
-#COPY ./build/libs/*fat.jar $APP_DIR/$APP_FILE
 COPY --from=builder /project/build/libs/*fat.jar $APP_DIR/$APP_FILE
 
 ENTRYPOINT ["sh", "-c"]
 CMD ["exec java -jar $APP_FILE"]
+
+
+# Alternate way to run the app without using fat jar
 
 #FROM vertx/vertx4
 #
