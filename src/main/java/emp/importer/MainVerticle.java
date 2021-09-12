@@ -15,40 +15,30 @@ import io.vertx.sqlclient.RowSet;
 
 public class MainVerticle extends AbstractVerticle {
 
+  //    DB connection configuration
+  MySQLConnectOptions connectOptions = new MySQLConnectOptions()
+    .setPort(3306)
+    .setHost("localhost")
+    .setDatabase("dev")
+    .setUser("root")
+    .setPassword("root");
+  // Pool options
+  PoolOptions poolOptions = new PoolOptions()
+    .setMaxSize(20);
+  // Create the client pool
+  MySQLPool dbClient;
+
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
     HttpServer server = vertx.createHttpServer();
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
 
-//    DB connection configuration
-    MySQLConnectOptions connectOptions = new MySQLConnectOptions()
-      .setPort(3306)
-      .setHost("localhost")
-      .setDatabase("dev")
-      .setUser("root")
-      .setPassword("root");
-// Pool options
-    PoolOptions poolOptions = new PoolOptions()
-      .setMaxSize(20);
-// Create the client pool
-    MySQLPool dbCient = MySQLPool.pool(vertx, connectOptions, poolOptions);
-// A simple query
-    dbCient
-      .query("select * from Employee")
-      .execute(ar -> {
-        if (ar.succeeded()) {
-          RowSet<Row> result = ar.result();
-          System.out.println("Got " + result.size() + " rows ");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-        // Now close the pool
-        dbCient.close();
-      });
+    dbClient = MySQLPool.pool(vertx, connectOptions, poolOptions);
 
-
-    router.route(HttpMethod.POST, "/v1/employee/bulk").handler(EmployeeService::postEmployeeBulkRoute);
+    router.route(HttpMethod.POST, "/v1/employee/bulk").handler(
+      ctx -> EmployeeService.postEmployeeBulkRoute(ctx, dbClient)
+    );
     router.route(HttpMethod.GET, "/ping").handler(EmployeeService::getPingRoute);
     router.route(HttpMethod.GET, "/").handler(EmployeeService::getPingRoute);
 
@@ -60,5 +50,13 @@ public class MainVerticle extends AbstractVerticle {
         startPromise.fail(http.cause());
       }
     });
+  }
+
+  @Override
+  public void stop(Promise<Void> stopFuture) throws Exception {
+    //must call super.stop() or call stopFuture.complete()
+    super.stop(stopFuture);
+    dbClient.close();
+    System.out.println("MyVerticle stopped!");
   }
 }

@@ -2,16 +2,19 @@ package emp.importer.payload;
 
 public class Employee {
   private String employeeId;
-  private String name;
+  private String firstName;
+  private String lastName;
   private String email;
   private String location;
 
   public Employee() {
     super();
   }
-  public Employee(String employeeId, String name, String email, String location) {
+
+  public Employee(String employeeId, String firstName, String lastName, String email, String location) {
     this.employeeId = employeeId;
-    this.name = name;
+    this.firstName = firstName;
+    this.lastName = lastName;
     this.email = email;
     this.location = location;
   }
@@ -24,12 +27,20 @@ public class Employee {
     this.employeeId = employeeId;
   }
 
-  public String getName() {
-    return name;
+  public String getFirstName() {
+    return firstName;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
   }
 
   public String getEmail() {
