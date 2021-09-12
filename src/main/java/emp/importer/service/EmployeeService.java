@@ -12,10 +12,36 @@ import io.vertx.mysqlclient.MySQLPool;
 import java.util.List;
 
 public class EmployeeService {
-  public static void postEmployeeBulkRoute(RoutingContext ctx, MySQLPool dbClient) {
+  /**
+   * Employees POST - Bulk operation
+   */
+  public static void postEmployeesRoute(RoutingContext ctx, MySQLPool dbClient) {
     try {
       List<Employee> empList = Utils.deserializeEmpList(ctx.getBodyAsString());
-      EmployeeDao.insertEmployeesAsync(empList, dbClient, successHandler(ctx), errorHandler(ctx));
+      EmployeeDao
+        .insertEmployeesAsync(empList, dbClient)
+        .onSuccess(successHandler(ctx))
+        .onFailure(errorHandler(ctx));
+    } catch (JsonProcessingException e) {
+      errorHandler(ctx).handle(e);
+    }
+  }
+
+  /**
+   * Employee PUT
+   * - Updates single employee in DB and Emits Kafka event
+   */
+  public static void putEmployeeRoute(RoutingContext ctx, MySQLPool dbClient) {
+    try {
+      Employee emp = Utils.deserializeEmployee(ctx.getBodyAsString());
+      EmployeeDao
+        .updateEmployeeAsync(emp, dbClient)
+        .onSuccess(v ->
+          ctx.response()
+            .putHeader("content-type", "application/json")
+            .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
+            .end())
+        .onFailure(errorHandler(ctx));
     } catch (JsonProcessingException e) {
       errorHandler(ctx).handle(e);
     }

@@ -10,8 +10,6 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -36,10 +34,12 @@ public class MainVerticle extends AbstractVerticle {
 
     dbClient = MySQLPool.pool(vertx, connectOptions, poolOptions);
 
-    router.route(HttpMethod.POST, "/v1/employee/bulk").handler(
-      ctx -> EmployeeService.postEmployeeBulkRoute(ctx, dbClient)
+    router.route(HttpMethod.POST, "/v1/employees").handler(
+      ctx -> EmployeeService.postEmployeesRoute(ctx, dbClient)
     );
-    router.route(HttpMethod.GET, "/ping").handler(EmployeeService::getPingRoute);
+    router.route(HttpMethod.PUT, "/v1/employee").handler(
+      ctx -> EmployeeService.putEmployeeRoute(ctx, dbClient)
+    );
     router.route(HttpMethod.GET, "/").handler(EmployeeService::getPingRoute);
 
     server.requestHandler(router).listen(8080, http -> {

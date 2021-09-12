@@ -31,24 +31,29 @@ public class EmployeeDao {
       });
   }
 
-  public static Future<SqlConnection> insertEmployeesAsync(List<Employee> empList, MySQLPool dbClient,
-                                                           Handler<Void> successHandler, Handler<Throwable> errorHandler) {
+  public static Future<Void> insertEmployeesAsync(List<Employee> empList, MySQLPool dbClient) {
     List<Tuple> batch = new ArrayList<>();
     for (Employee emp : empList) {
       batch.add(Tuple.of(emp.getEmployeeId(), emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getLocation()));
     }
 
     return dbClient.getConnection()
-      .onSuccess(conn -> {
-        conn.begin()
-          .compose(tx -> conn
-            .preparedQuery("INSERT INTO Employee (EmployeeId, FirstName, LastName, Email, Location) VALUES (?, ?, ?, ?, ?)")
-            .executeBatch(batch)
-            .compose(res3 -> tx.commit()))
-          .eventually(v -> conn.close())
-          .onSuccess(successHandler)
-          .onFailure(errorHandler);
-      });
+      .compose(conn -> conn.begin()
+        .compose(tx -> conn
+          .preparedQuery("INSERT INTO Employee (EmployeeId, FirstName, LastName, Email, Location) VALUES (?, ?, ?, ?, ?)")
+          .executeBatch(batch)
+          .compose(res -> tx.commit())
+        )
+        .eventually(v -> conn.close()));
+  }
+
+  public static Future<RowSet<Row>> updateEmployeeAsync(Employee emp, MySQLPool dbClient) {
+    Tuple data = Tuple.of(emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getLocation(), emp.getEmployeeId());
+    return dbClient.getConnection()
+      .compose(conn -> conn
+        .preparedQuery("UPDATE Employee SET FirstName=?, LastName=?, Email=?, Location=? where EmployeeId=?")
+        .execute(data)
+        .eventually(v -> conn.close()));
   }
 
 
