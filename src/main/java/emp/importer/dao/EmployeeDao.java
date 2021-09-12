@@ -2,6 +2,7 @@ package emp.importer.dao;
 
 import emp.importer.payload.Employee;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Row;
@@ -30,7 +31,8 @@ public class EmployeeDao {
       });
   }
 
-  public static Future<SqlConnection> insertEmployeesAsync(List<Employee> empList, MySQLPool dbClient) {
+  public static Future<SqlConnection> insertEmployeesAsync(List<Employee> empList, MySQLPool dbClient,
+                                                           Handler<Void> successHandler, Handler<Throwable> errorHandler) {
     List<Tuple> batch = new ArrayList<>();
     for (Employee emp : empList) {
       batch.add(Tuple.of(emp.getEmployeeId(), emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getLocation()));
@@ -43,9 +45,9 @@ public class EmployeeDao {
             .preparedQuery("INSERT INTO Employee (EmployeeId, FirstName, LastName, Email, Location) VALUES (?, ?, ?, ?, ?)")
             .executeBatch(batch)
             .compose(res3 -> tx.commit()))
-          .eventually(v -> conn.close());
-//          .onSuccess(v -> System.out.println("Transaction succeeded"))
-//          .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
+          .eventually(v -> conn.close())
+          .onSuccess(successHandler)
+          .onFailure(errorHandler);
       });
   }
 
