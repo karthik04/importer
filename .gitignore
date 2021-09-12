@@ -186,6 +186,7 @@ nbdist/
 
 ### Intellij ###
 .idea/
+.run/
 
 ### Gradle ###
 build/

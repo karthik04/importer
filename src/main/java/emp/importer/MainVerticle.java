@@ -6,6 +6,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.BodyHandler;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -13,6 +14,7 @@ public class MainVerticle extends AbstractVerticle {
   public void start(Promise<Void> startPromise) throws Exception {
     HttpServer server = vertx.createHttpServer();
     Router router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
 
     router.route(HttpMethod.POST, "/v1/employee/bulk").handler(EmployeeService::postEmployeeBulkRoute);
     router.route(HttpMethod.GET, "/ping").handler(EmployeeService::getPingRoute);
