@@ -29,9 +29,9 @@ application {
 
 dependencies {
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
-  implementation("io.vertx:vertx-web-client")
   implementation("io.vertx:vertx-web")
   implementation("io.vertx:vertx-mysql-client")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.12.2")
   implementation("io.vertx:vertx-micrometer-metrics")
   implementation("io.vertx:vertx-rx-java3")
   implementation("io.vertx:vertx-kafka-client")
