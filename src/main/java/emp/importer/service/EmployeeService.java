@@ -10,8 +10,11 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.mysqlclient.MySQLPool;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static emp.importer.utils.Constants.EMP_TOPIC_V1;
@@ -38,12 +41,17 @@ public class EmployeeService {
    */
   public static void putEmployeeRoute(RoutingContext ctx, MySQLPool dbClient, GreyhoundProducer kafkaProducer) {
     try {
+//      new RecordHeaders().add("type", COMPONENT_UPDATE.toCharArray.map(_.toByte))
       Employee emp = Utils.deserializeEmployee(ctx.getBodyAsString());
       EmployeeDao
         .updateEmployeeAsync(emp, dbClient)
         .onSuccess(v -> {
+            List<Header> headersList = new ArrayList<>();
+            headersList.add(new RecordHeader("header_key", "header_value".getBytes()));
+            headersList.add(new RecordHeader("h1", "h2".getBytes()));
             kafkaProducer.produce(
-              new ProducerRecord<>(EMP_TOPIC_V1, "hello world"),
+              new ProducerRecord<>(EMP_TOPIC_V1, null, null, emp.getEmployeeId(),
+                "hello world2", headersList),
               new StringSerializer(),
               new StringSerializer());
             ctx.response()
