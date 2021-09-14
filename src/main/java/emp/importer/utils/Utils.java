@@ -11,6 +11,7 @@ public class Utils {
   public static Employee deserializeEmployee(String jsonString) throws JsonProcessingException {
     return new ObjectMapper().readValue(jsonString, Employee.class);
   }
+
   public static List<Employee> deserializeEmpList(String jsonString) throws JsonProcessingException {
     return Arrays.asList(new ObjectMapper().readValue(jsonString, Employee[].class));
   }

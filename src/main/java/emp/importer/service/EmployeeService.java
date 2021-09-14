@@ -14,6 +14,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.List;
 
+import static emp.importer.utils.Constants.EMP_TOPIC_V1;
+
 public class EmployeeService {
   /**
    * Employees POST - Bulk operation
@@ -34,14 +36,14 @@ public class EmployeeService {
    * Employee PUT
    * - Updates single employee in DB and Emits Kafka event
    */
-  public static void putEmployeeRoute(RoutingContext ctx, MySQLPool dbClient, GreyhoundProducer producer) {
+  public static void putEmployeeRoute(RoutingContext ctx, MySQLPool dbClient, GreyhoundProducer kafkaProducer) {
     try {
       Employee emp = Utils.deserializeEmployee(ctx.getBodyAsString());
       EmployeeDao
         .updateEmployeeAsync(emp, dbClient)
         .onSuccess(v -> {
-            producer.produce( // Produce to topic
-              new ProducerRecord<>("test", "hello world"),
+            kafkaProducer.produce(
+              new ProducerRecord<>(EMP_TOPIC_V1, "hello world"),
               new StringSerializer(),
               new StringSerializer());
             ctx.response()
@@ -54,6 +56,13 @@ public class EmployeeService {
     } catch (JsonProcessingException e) {
       errorHandler(ctx).handle(e);
     }
+  }
+
+  public static void getPingRoute(RoutingContext ctx) {
+    ctx.response()
+      .putHeader("content-type", "text/plain")
+      .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
+      .end("App running!");
   }
 
   private static Handler<Void> successHandler(RoutingContext ctx) {
@@ -70,12 +79,7 @@ public class EmployeeService {
         .putHeader("content-type", "application/json")
         .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
         .end(v.getMessage());
-//    TODO: Send error message in a standard json format
+//    TODO: Add error message in a standard json format
   }
 
-  public static void getPingRoute(RoutingContext ctx) {
-    ctx.response()
-      .putHeader("content-type", "text/plain")
-      .end("App running!");
-  }
 }
