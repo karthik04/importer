@@ -36,6 +36,7 @@ dependencies {
   implementation("io.vertx:vertx-rx-java3")
   implementation("io.vertx:vertx-kafka-client")
   implementation("io.vertx:vertx-opentracing")
+  implementation("com.wix:greyhound-java:0.2.0")
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }

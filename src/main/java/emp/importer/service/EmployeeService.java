@@ -1,6 +1,7 @@
 package emp.importer.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.wixpress.dst.greyhound.java.GreyhoundProducer;
 import emp.importer.dao.EmployeeDao;
 import emp.importer.payload.Employee;
 import emp.importer.utils.Utils;
@@ -8,6 +9,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.mysqlclient.MySQLPool;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.List;
 
@@ -31,16 +34,22 @@ public class EmployeeService {
    * Employee PUT
    * - Updates single employee in DB and Emits Kafka event
    */
-  public static void putEmployeeRoute(RoutingContext ctx, MySQLPool dbClient) {
+  public static void putEmployeeRoute(RoutingContext ctx, MySQLPool dbClient, GreyhoundProducer producer) {
     try {
       Employee emp = Utils.deserializeEmployee(ctx.getBodyAsString());
       EmployeeDao
         .updateEmployeeAsync(emp, dbClient)
-        .onSuccess(v ->
-          ctx.response()
-            .putHeader("content-type", "application/json")
-            .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
-            .end())
+        .onSuccess(v -> {
+            producer.produce( // Produce to topic
+              new ProducerRecord<>("test", "hello world"),
+              new StringSerializer(),
+              new StringSerializer());
+            ctx.response()
+              .putHeader("content-type", "application/json")
+              .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
+              .end();
+          }
+        )
         .onFailure(errorHandler(ctx));
     } catch (JsonProcessingException e) {
       errorHandler(ctx).handle(e);
