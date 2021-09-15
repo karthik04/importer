@@ -9,6 +9,7 @@ services:
       - "8080:8080"
     env_file:
       - dev.env
+    restart: always
 
   db:
     image: mysql
@@ -34,7 +35,7 @@ services:
   kafka:
     image: obsidiandynamics/kafka
     container_name: kafka
-    restart: "no"
+    restart: always
     ports:
       - "2181:2181"
       - "9092:9092"
