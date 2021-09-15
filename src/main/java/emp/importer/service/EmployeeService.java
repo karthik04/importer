@@ -43,7 +43,6 @@ public class EmployeeService {
    */
   public static void putEmployeeRoute(RoutingContext ctx, MySQLPool dbClient, GreyhoundProducer kafkaProducer) {
     try {
-//      new RecordHeaders().add("type", COMPONENT_UPDATE.toCharArray.map(_.toByte))
       Employee emp = Utils.deserializeEmployee(ctx.getBodyAsString());
       EmployeeDao
         .updateEmployeeAsync(emp, dbClient)
@@ -91,7 +90,7 @@ public class EmployeeService {
         .putHeader("content-type", "application/json")
         .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
         .end(v.getMessage());
-//    TODO: Add error message in a standard json format
+//    TODO: Add error message in standard json format
   }
 
 }
