@@ -51,7 +51,7 @@ public class EmployeeService {
           List<Header> headersList = new ArrayList<>();
           headersList.add(new RecordHeader(OBJECT_TYPE, OBJECT_TYPE_EMP.getBytes()));
           headersList.add(new RecordHeader(EVENT_TYPE, EVENT_TYPE_HEADER_UPDATE.getBytes()));
-          KafkaPayload kafkaPayload = new KafkaPayload(emp.getEmployeeId(), OBJECT_TYPE_EMP, EVENT_TYPE_HEADER_UPDATE);
+          KafkaPayload kafkaPayload = new KafkaPayload(emp.getEmployeeId(), OBJECT_TYPE_EMP, EVENT_TYPE_HEADER_UPDATE, emp);
           return kafkaProducer.produce(
             new ProducerRecord<>(EMP_TOPIC_V1, null, null, emp.getEmployeeId(),
               serializeKafkaPayload(kafkaPayload), headersList),
