@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.wixpress.dst.greyhound.java.GreyhoundProducer;
 import emp.importer.dao.EmployeeDao;
 import emp.importer.payload.Employee;
+import emp.importer.payload.KafkaPayload;
 import emp.importer.utils.Utils;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
@@ -17,7 +18,8 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static emp.importer.utils.Constants.EMP_TOPIC_V1;
+import static emp.importer.utils.Constants.*;
+import static emp.importer.utils.Utils.serializeKafkaPayload;
 
 public class EmployeeService {
   /**
@@ -45,20 +47,22 @@ public class EmployeeService {
       Employee emp = Utils.deserializeEmployee(ctx.getBodyAsString());
       EmployeeDao
         .updateEmployeeAsync(emp, dbClient)
-        .onSuccess(v -> {
-            List<Header> headersList = new ArrayList<>();
-            headersList.add(new RecordHeader("header_key", "header_value".getBytes()));
-            headersList.add(new RecordHeader("h1", "h2".getBytes()));
-            kafkaProducer.produce(
-              new ProducerRecord<>(EMP_TOPIC_V1, null, null, emp.getEmployeeId(),
-                "hello world2", headersList),
-              new StringSerializer(),
-              new StringSerializer());
-            ctx.response()
-              .putHeader("content-type", "application/json")
-              .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
-              .end();
-          }
+        .map(rows -> {
+          List<Header> headersList = new ArrayList<>();
+          headersList.add(new RecordHeader(OBJECT_TYPE, OBJECT_TYPE_EMP.getBytes()));
+          headersList.add(new RecordHeader(EVENT_TYPE, EVENT_TYPE_HEADER_UPDATE.getBytes()));
+          KafkaPayload kafkaPayload = new KafkaPayload(emp.getEmployeeId(), OBJECT_TYPE_EMP, EVENT_TYPE_HEADER_UPDATE);
+          return kafkaProducer.produce(
+            new ProducerRecord<>(EMP_TOPIC_V1, null, null, emp.getEmployeeId(),
+              serializeKafkaPayload(kafkaPayload), headersList),
+            new StringSerializer(),
+            new StringSerializer());
+        })
+        .onSuccess(v ->
+          ctx.response()
+            .putHeader("content-type", "application/json")
+            .setStatusCode(HttpResponseStatus.NO_CONTENT.code())
+            .end()
         )
         .onFailure(errorHandler(ctx));
     } catch (JsonProcessingException e) {
