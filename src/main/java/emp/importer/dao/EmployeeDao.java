@@ -13,6 +13,7 @@ import io.vertx.sqlclient.Tuple;
 import java.util.ArrayList;
 import java.util.List;
 
+//TODO: Use interface for Dao class
 public class EmployeeDao {
 
   public static void insertEmployees(List<Employee> empList, MySQLPool dbClient) {
