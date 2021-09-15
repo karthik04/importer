@@ -7,7 +7,10 @@ To build and run the app use:
 
 Ensure that the exposed  ports are available. Initial build may take a few minutes.
 
-Note: Starting point for the application is `MainVerticle.java`
+Note:
+- Starting point for the application is `MainVerticle.java`
+- Swagger spec can be found in the file `swagger-spec.yaml`
+
 ### Design choices
 - [Vert.x](https://vertx.io/) is asynchronous event driven application framework from Eclipse, used in the project. Concurrency model used in Vertx can handle resources much more efficiently.
 - [Greyhound](https://github.com/wix/greyhound) is a kafka library from Wix which provides a higher-level interfaces to work with Kafka and to express richer semantics such as retry policies or  parallel message handling with ease.

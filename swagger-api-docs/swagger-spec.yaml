@@ -1,0 +1,119 @@
+swagger: "2.0"
+info:
+  description: "APIs to add and update employees"
+  version: "1.0.0"
+  title: "Employee"
+host: "localhost:8080"
+basePath: "/v1"
+tags:
+  - name: "Employee"
+    description: "APIs to add and update employees"
+schemes:
+  - "http"
+paths:
+  /employees:
+    post:
+      tags:
+        - "Employee"
+      summary: "Add employees bulk operation"
+      description: ""
+      operationId: "employees"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "List of employee objects that needs to be stored"
+          required: true
+          schema:
+            $ref: "#/definitions/Employees"
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Invalid input"
+
+  /employee:
+    put:
+      tags:
+        - "Employee"
+      summary: "Update employee and publish kafka events"
+      description: ""
+      operationId: "updateEmployee"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Employee object to be updated"
+          required: true
+          schema:
+            $ref: "#/definitions/Employee"
+      responses:
+        "204":
+          description: "Success"
+        "400":
+          description: "Invalid input"
+
+definitions:
+  Employee:
+    type: "object"
+    properties:
+      employeeId:
+        type: "string"
+        description: "Employee Id"
+        example: "eid1"
+      firstName:
+        type: "string"
+        description: "Employee's first name"
+        example: "name1"
+      lastName:
+        type: "string"
+        description: "Employee's last name"
+        example: "name2"
+      email:
+        type: "string"
+        description: "Unique email id"
+        example: "k1@gm.com"
+      location:
+        type: "string"
+        description: "Seating location"
+        example: "loc"
+    xml:
+      name: "Employee"
+  Employees:
+    type: "array"
+    xml:
+      name: "Employees"
+      wrapped: true
+    items:
+      type: "object"
+      properties:
+        employeeId:
+          type: "string"
+          description: "Employee Id"
+          example: "eid1"
+        firstName:
+          type: "string"
+          description: "Employee's first name"
+          example: "name1"
+        lastName:
+          type: "string"
+          description: "Employee's last name"
+          example: "name2"
+        email:
+          type: "string"
+          description: "Unique email id"
+          example: "k1@gm.com"
+        location:
+          type: "string"
+          description: "Seating location"
+          example: "loc"
+
+externalDocs:
+  description: "Check the source code here"
+  url: "https://github.com/karthik04/importer"
